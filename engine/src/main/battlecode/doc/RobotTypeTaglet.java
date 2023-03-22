@@ -1,13 +1,16 @@
 package battlecode.doc;
 
 import battlecode.common.RobotType;
-import com.sun.javadoc.Tag;
-import com.sun.tools.doclets.Taglet;
+import com.sun.source.doctree.DocTree;
+import javax.lang.model.element.Element;
+import jdk.javadoc.doclet.Taglet;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Taglet for annotating the individual variants of RobotType.
@@ -20,40 +23,19 @@ public class RobotTypeTaglet implements Taglet {
         map.put(TAG_NAME, new RobotTypeTaglet());
     }
 
+    @Override
     public String getName() {
         return TAG_NAME;
     }
 
-    public boolean inConstructor() {
-        return false;
+    @Override
+    public Set<Taglet.Location> getAllowedLocations() {
+        return Set.of(Taglet.Location.FIELD);
     }
 
-    public boolean inField() {
-        return true;
-    }
-
-    public boolean inMethod() {
-        return false;
-    }
-
-    public boolean inOverview() {
-        return false;
-    }
-
-    public boolean inPackage() {
-        return false;
-    }
-
-    public boolean inType() {
-        return false;
-    }
-
+    @Override
     public boolean isInlineTag() {
         return false;
-    }
-
-    public String toString(Tag tag) {
-        throw new IllegalArgumentException("The robot tag may not be used inline.");
     }
 
     static public void append(StringBuilder builder, String label, String value) {
@@ -199,11 +181,11 @@ public class RobotTypeTaglet implements Taglet {
         return builder.toString();
     }
 
-    public String toString(Tag[] tags) {
-        if (tags.length != 1) {
-            throw new IllegalArgumentException("Too many @"+TAG_NAME+"tags: "+tags.length);
+    public String toString(List<? extends DocTree> tags, Element element) {
+        if (tags.size() != 1) {
+            throw new IllegalArgumentException("Too many @"+TAG_NAME+"tags: "+tags.size());
         }
 
-        return docFor(tags[0].holder().name());
+        return docFor(element.getSimpleName().toString());
     }
 }
