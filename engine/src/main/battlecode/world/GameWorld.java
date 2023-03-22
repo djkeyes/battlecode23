@@ -14,7 +14,7 @@ import java.util.*;
  * The primary implementation of the GameWorld interface for containing and
  * modifying the game map and the objects on it.
  */
-public strictfp class GameWorld {
+public class GameWorld {
     /**
      * The current round we're running.
      */
@@ -388,7 +388,7 @@ public strictfp class GameWorld {
     
     public void removeBoostFromAnchor(Island island){
         int teamOrdinal = island.getTeam().ordinal();
-        Integer boostIdentifier = new Integer(island.getID());
+        Integer boostIdentifier = island.getID();
         for (MapLocation loc : island.getLocsAffected()){
             ArrayList<Integer> curAnchorList = this.boosts[locationToIndex(loc)][teamOrdinal][ANCHOR_INDEX];
             if (curAnchorList.size() <= GameConstants.MAX_ANCHOR_STACKS){
