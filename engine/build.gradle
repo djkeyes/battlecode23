@@ -1,4 +1,7 @@
-apply plugin: 'java'
+plugins {
+    id('java')
+    id('org.gradlex.extra-java-module-info')
+}
 
 sourceCompatibility = JavaVersion.VERSION_17
 
@@ -30,10 +33,24 @@ repositories {
   maven {url "https://mvnrepository.com/artifact/net.sf.trove4j/trove4j"}
 }
 
+extraJavaModuleInfo {
+    // hibernate-search has some unused unimported dependencies, so it's okay if we can't find them
+    failOnMissingModuleInfo.set(false)
+    
+    automaticModule("org.apache.commons:commons-lang3", "org.apache.commons")
+    automaticModule("commons-cli:commons-cli", "commons.cli")
+    automaticModule("commons-io:commons-io", "commons.io")
+    automaticModule("com.google.flatbuffers:flatbuffers-java", "com.google.flatbuffers")
+    automaticModule("org.java-websocket:Java-WebSocket", "org.java.websocket")
+    
+    automaticModule("org.hibernate:hibernate-search", "org.hibernate")
+    
+    automaticModule("net.sf.jsi:jsi", "net.sf.jsi")
+    automaticModule("net.sf.trove4j:trove4j", "net.sf.trove4j")
+}
+
 dependencies {
   implementation(
-    [group: 'org.slf4j', name: 'slf4j-api', version: '2.0.6'],
-    [group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.6'],
     [group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'],
     [group: 'commons-cli', name: 'commons-cli', version: '1.5.0'],
     [group: 'commons-io', name: 'commons-io', version: '2.11.0'],
@@ -43,12 +60,12 @@ dependencies {
 
     // Flatbuffers
     [group: 'com.google.flatbuffers', name: 'flatbuffers-java', version: '1.11.0'],
-
+    
     // Websockets
     [group: 'org.java-websocket', name: 'Java-WebSocket', version: '1.3.0'],
 
     // We only use WeakIdentityHashMap which doesn't depend on anything
-    [group: 'org.hibernate', name: 'hibernate-search', version: '3.1.0.GA'],
+    [group: 'org.hibernate', name: 'hibernate-search', version: '3.3.0.Final'],
 
     // Java Spatial Index, RTree indexing
     [group: 'net.sf.jsi', name: 'jsi', version: '1.1.0-SNAPSHOT'],
@@ -69,9 +86,14 @@ jar {
 }
 
 javadoc {
+  // Gradle does not yet fully support javadocs with modularized java
+  // This applies the workaround from https://github.com/gradle/gradle/issues/19726
+  def sourceSetDirectories = sourceSets.main.java.sourceDirectories.join(":")
+  def coreOptions = options as CoreJavadocOptions
+  coreOptions.addStringOption("-source-path", sourceSetDirectories)
+  
   includes = ["**/common/**"]
   options.windowTitle = "Battlecode 2023"
-  options.classpath = sourceSets.main.compileClasspath as List
   options.doclet = "jdk.javadoc.doclet.StandardDoclet"
   options.taglets = ["battlecode.doc.CostlyMethodTaglet", "battlecode.doc.RobotTypeTaglet"]
   options.tagletPath = ( sourceSets.main.output.classesDirs as List )+ sourceSets.main.compileClasspath
