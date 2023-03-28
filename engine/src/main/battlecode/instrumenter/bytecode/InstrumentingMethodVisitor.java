@@ -341,16 +341,20 @@ public class InstrumentingMethodVisitor extends MethodNode implements Opcodes {
     }
 
     private void visitInvokeDynamicInsnNode(InvokeDynamicInsnNode n) {
-        // should only be used for creating lambdas in java 8 (not scala)
+        // In Java 17, this is used for creating lambdas, evaluating certain built-ins (like concatenating strings),
+        // and generating record classes
         n.desc = methodDescReference(n.desc);
         for (int i = 0; i < n.bsmArgs.length; i++) {
             final Object arg = n.bsmArgs[i];
 
-            if (arg instanceof Type) {
-                Type t = (Type) arg;
-                n.bsmArgs[i] = Type.getType(methodDescReference(t.getDescriptor()));
-            } else if (arg instanceof Handle) {
-                Handle h = (Handle) arg;
+            if (arg instanceof Type t) {
+
+                n.bsmArgs[i] = switch (t.getSort()){
+                    case Type.METHOD -> Type.getType(methodDescReference(t.getDescriptor()));
+                    case Type.OBJECT, Type.ARRAY -> Type.getType(classDescReference(t.getDescriptor()));
+                    default -> t;
+                };
+            } else if (arg instanceof Handle h) {
 
                 if (checkDisallowed) {
                     checkDisallowedMethod(h.getOwner(), h.getName(), h.getDesc());
@@ -392,11 +396,18 @@ public class InstrumentingMethodVisitor extends MethodNode implements Opcodes {
                     }
                 }
 
+                String desc = switch (Type.getType(h.getDesc()).getSort()) {
+                    case Type.METHOD -> methodDescReference(h.getDesc());
+                    case Type.OBJECT, Type.ARRAY -> classDescReference(h.getDesc());
+                    default -> h.getDesc();
+                };
+
                 n.bsmArgs[i] = new Handle(
                         h.getTag(),
                         classReference(h.getOwner()),
                         h.getName(),
-                        methodDescReference(h.getDesc())
+                        desc,
+                        h.isInterface()
                 );
             }
         }
