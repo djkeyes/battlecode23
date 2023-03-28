@@ -3,6 +3,7 @@ module battlecode.engine {
     
     requires com.google.flatbuffers;
     requires org.objectweb.asm.tree;
-    
+    requires org.hibernate;
+
     exports battlecode.common;
 }
