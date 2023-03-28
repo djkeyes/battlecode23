@@ -53,6 +53,8 @@ task headless(type: JavaExec, dependsOn: [':engine:build', ':example-bots:build'
   classpath = files(serverJar) + project(':example-bots').sourceSets.main.output + configurations.scala
   args = ['-c=-']
   jvmArgs = [
+    '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED',
+    '--add-opens=java.base/jdk.internal.access=ALL-UNNAMED', // TODO: may need additional opened packages
     '-Dbc.server.wait-for-client=' + (project.findProperty('waitForClient') ?: 'false'),
     '-Dbc.server.mode=headless',
     '-Dbc.server.map-path=maps',
