@@ -3,11 +3,15 @@ package examplefuncsplayer;
 import battlecode.common.*;
 
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * RobotPlayer is the class that describes your main robot strategy.
@@ -132,6 +136,51 @@ public class RobotPlayer {
                 rc.buildRobot(RobotType.LAUNCHER, newLoc);
             }
         }
+
+        // Check that various Java features haven't broken
+        RobotType enumValue = RobotType.LAUNCHER;
+        boolean canAttack = enumValue.canAttack();
+
+        Map<RobotType, Integer> enumMap = new EnumMap<>(RobotType.class);
+        enumMap.put(RobotType.LAUNCHER, 42);
+
+        Map<Integer, Integer> hashMap = new HashMap<>();
+        hashMap.put(123, 456);
+
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>();
+        priorityQueue.add(4);
+        priorityQueue.add(7);
+        priorityQueue.add(2);
+
+        int[] intArr = new int[]{3, 3, 5, 8, 5, 3, 4, 6, 8, 5, 7, 4, 3, 7, 6, 4, 3};
+        Arrays.sort(intArr);
+        Integer[] objArr = new Integer[]{3, 3, 5, 8, 5, 3, 4, 6, 8, 5, 7, 4, 3, 7, 6, 4, 3};
+        Arrays.sort(objArr);
+
+        Integer[] data = new Integer[]{1, 2, 3, 4, 5};
+        List<Integer> dataList = Arrays.asList(data);
+        Stream<Integer> dataStream = dataList.stream();
+        Stream<Integer> evenDataStream = dataStream.filter(x -> x % 2 == 0);
+        Object[] evenData = evenDataStream.toArray();
+        // This seems to fail, because jdk.internal.misc.SharedSecrets hardcodes class names as strings
+        // See https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/jdk/internal/access/SharedSecrets.java#L101
+        // TODO: these strings probably need to be sanitized on a case-by-case basis
+        // List<Integer> listData = evenDataStream.toList();
+
+        // Let's use some features from Java 9+
+        // var was introduced with Java 10, and record types with Java 16
+        var numNearbyAllies = rc.senseNearbyRobots(-1, rc.getTeam()).length;
+        var numNearbyEnemies = rc.senseNearbyRobots(-1, rc.getTeam().opponent()).length;
+
+        var observations = new ImportantGameObservations(numNearbyAllies, numNearbyEnemies);
+        if (observations.numNearbyAllyRobots() > observations.numNearbyEnemyRobots()) {
+            System.out.println("I have a good feeling about this!");
+        } else {
+            System.out.println("I have a baaaaad feeling about this!");
+        }
+    }
+
+    private record ImportantGameObservations(int numNearbyAllyRobots, int numNearbyEnemyRobots) {
     }
 
     /**
