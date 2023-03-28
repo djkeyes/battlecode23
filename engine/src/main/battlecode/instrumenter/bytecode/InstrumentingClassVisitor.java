@@ -7,9 +7,6 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Instruments a class. Overrides class references and runs an
  * InstrumentingMethodVisitor on every method.
@@ -146,6 +143,20 @@ public class InstrumentingClassVisitor extends ClassVisitor implements Opcodes {
                 loader.getRefUtil().classReference(outerName, checkDisallowed),
                 innerName, access
         );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public void visitNestHost(final String nestHost) {
+        cv.visitNestHost(loader.getRefUtil().classReference(nestHost, checkDisallowed));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public void visitNestMember(final String nestMember) {
+        cv.visitNestMember(loader.getRefUtil().classReference(nestMember, checkDisallowed));
     }
 
 }
